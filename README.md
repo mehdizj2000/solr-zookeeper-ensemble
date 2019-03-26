@@ -8,13 +8,13 @@ All the job can be done by docker's command line I already tried that with no is
 
 this command issues the deploying the services in the swarm:
 
-# docker stack deploy --compose-file=solr-cloud-zk-ensemble.yml solr-zk
+**docker stack deploy --compose-file=solr-cloud-zk-ensemble.yml solr-zk**
 
 Because zookeer ensemble takes sometimes to be fully intialized and solr instances need it to be launched successfully, solr instances won't be not ready to use right away. I tried the "depends_on" attribute and it doesn't work as expected in swarm mode. Also I used different restart policy with no result.
 
 My work around to fix the issue is to run update service on solr service instances after successfull zookeeper ensemble startup as bellow:
 
-# docker service update solr-zk-ensemble_solr-x
+**docker service update solr-zk-ensemble_solr-x**
 
 
 

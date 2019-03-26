@@ -1,0 +1,109 @@
+version: '3.7'
+
+services:
+  zoo1:
+    image: zookeeper
+    restart: always
+    networks:
+      zoonet:
+    volumes:
+      - 'zoo-1_data:/data'
+    hostname: zoo1
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+
+  zoo2:
+    image: zookeeper
+    restart: always
+    networks:
+      zoonet:
+    volumes:
+      - 'zoo-2_data:/data'
+    hostname: zoo2
+    ports:
+      - 2182:2182
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_PORT: 2182
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=0.0.0.0:2888:3888 server.3=zoo3:2888:3888
+
+  zoo3:
+    image: zookeeper
+    restart: always
+    networks:
+      zoonet:
+    volumes:
+      - 'zoo-3_data:/data'
+    hostname: zoo3
+    ports:
+      - 2183:2183
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_PORT: 2183
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=0.0.0.0:2888:3888
+  solr-1:
+    image: solr
+    hostname: solr-1
+    ports:
+      - 8583:8983
+    networks:
+      - zoonet
+    deploy:
+      restart_policy:
+        condition: any
+    volumes:
+      - 'solr-1_store:/opt/solr/server/solr/'
+      - 'solr-1_entrypoint:/docker-entrypoint-initdb.d'
+    environment:
+      ZK_HOST: zoo1:2181,zoo2:2182,zoo3:2183
+  solr-2:
+    image: solr
+    hostname: solr-2
+    ports:
+      - 8584:8983
+    networks:
+      - zoonet
+    deploy:
+      restart_policy:
+        condition: any
+    volumes:
+      - 'solr-2_store:/opt/solr/server/solr/'
+      - 'solr-2_entrypoint:/docker-entrypoint-initdb.d'
+    environment:
+      ZK_HOST: zoo1:2181,zoo2:2182,zoo3:2183
+  solr-3:
+    image: solr
+    hostname: solr-3
+    ports:
+      - 8585:8983
+    networks:
+      - zoonet
+    deploy:
+      restart_policy:
+        condition: any
+    volumes:
+      - 'solr-3_store:/opt/solr/server/solr/'
+      - 'solr-3_entrypoint:/docker-entrypoint-initdb.d'
+    environment:
+      ZK_HOST: zoo1:2181,zoo2:2182,zoo3:2183
+networks:
+  zoonet:
+    driver: overlay
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.101.0.0/16
+volumes:
+  zoo-1_data: 
+  zoo-2_data: 
+  zoo-3_data: 
+  solr-1_store:
+  solr-1_entrypoint:
+  solr-2_store:
+  solr-2_entrypoint:
+  solr-3_store:
+  solr-3_entrypoint:
